@@ -26,6 +26,10 @@ public class UROSSemLogInfoPlugin : ModuleRules
 			new string[]
 			{
 				"Core",
+                "URosBridge",
+                "Json",
+                "JsonUtilities",
+                "UTags"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
