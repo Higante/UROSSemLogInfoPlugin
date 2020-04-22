@@ -2,12 +2,11 @@
 
 #include "AActorSemLogPublisher.h"
 #include "Engine/World.h"
-#include "Kismet/GameplayStatics.h"
 #include "UTags/Public/Tags.h"
 #include "Map.h"
 
 // Sets default values
-AAActorSemLogPublisher::AAActorSemLogPublisher()
+AActorSemLogPublisher::AActorSemLogPublisher()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -15,7 +14,7 @@ AAActorSemLogPublisher::AAActorSemLogPublisher()
 }
 
 // Called when the game starts or when spawned
-void AAActorSemLogPublisher::BeginPlay()
+void AActorSemLogPublisher::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -29,14 +28,15 @@ void AAActorSemLogPublisher::BeginPlay()
 
 	// PoseStamped Publisher
 	Publisher = MakeShareable<FROSBridgePublisher>(new FROSBridgePublisher(PoseStampedTopic, TEXT("geometry_msgs/PoseStamped")));
-
 	ActiveGameInstance->ROSHandler->AddPublisher(Publisher);
+	TSharedPtr<FROSDeleteObjectServer> ServiceServer = MakeShareable(new FROSDeleteObjectServer(TEXT("/delete_trigger"), GetSemLogObjects()));
+	ActiveGameInstance->ROSHandler->AddServiceServer(ServiceServer);
 	
 	ActiveGameInstance->ROSHandler->Process();
 }
 
 // Called every frame
-void AAActorSemLogPublisher::Tick(float DeltaTime)
+void AActorSemLogPublisher::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
@@ -47,11 +47,16 @@ void AAActorSemLogPublisher::Tick(float DeltaTime)
 	UROSBridgeGameInstance* ActiveGameInstance = Cast<UROSBridgeGameInstance>(GetGameInstance());
 	check(ActiveGameInstance);
 
-	PublishAllObjectsWithTag(ActiveGameInstance, PoseStampedTopic, "SemLog");
+	TimeCounterRosCall += DeltaTime;
+	if (TimeCounterRosCall >= 1.00)
+	{
+		TimeCounterRosCall -= 1.00;
+		PublishAllObjectsWithTag(ActiveGameInstance, PoseStampedTopic, "SemLog");
+	}
 	ActiveGameInstance->ROSHandler->Process();
 }
 
-TMap<AActor*, FJsonSerializableKeyValueMap> AAActorSemLogPublisher::GetSemLogObjects()
+TMap<AActor*, FJsonSerializableKeyValueMap> AActorSemLogPublisher::GetSemLogObjects()
 {
 	TMap<AActor*, FJsonSerializableKeyValueMap> Actors;
 
@@ -60,7 +65,7 @@ TMap<AActor*, FJsonSerializableKeyValueMap> AAActorSemLogPublisher::GetSemLogObj
 	return Actors;
 }
 
-void AAActorSemLogPublisher::PublishAllObjectsWithTag(UROSBridgeGameInstance* Instance, FString Topic, FString Tag)
+void AActorSemLogPublisher::PublishAllObjectsWithTag(UROSBridgeGameInstance* Instance, FString Topic, FString Tag)
 {
 	// Set up a Handler Variable and an Actor Map.
 	TSharedPtr<FROSBridgeHandler> Handler = Instance->ROSHandler;

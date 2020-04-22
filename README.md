@@ -1,6 +1,6 @@
 # USemLogObjectWorker
 
-**For UE4 Version:__4.22.1__** 
+**For UE4 Version: 4.22.1** 
 
 This Plugin intends to get certain PoseStamped Information out of the UE4 Editor, publishing them under a given topic, and allow certain things to happen to SemLog Objects
 

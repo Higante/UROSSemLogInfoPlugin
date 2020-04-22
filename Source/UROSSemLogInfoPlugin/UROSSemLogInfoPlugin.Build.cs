@@ -26,7 +26,7 @@ public class UROSSemLogInfoPlugin : ModuleRules
 			new string[]
 			{
 				"Core",
-                "URosBridge",
+                "UROSBridge",
                 "Json",
                 "JsonUtilities",
                 "UTags"

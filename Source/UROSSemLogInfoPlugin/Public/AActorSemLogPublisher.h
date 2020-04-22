@@ -6,19 +6,20 @@
 #include "GameFramework/Actor.h"
 #include "ROSBridgePublisher.h"
 #include "ROSBridgeGameInstance.h"
+#include "FROSDeleteObjectServer.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Quaternion.h"
 #include "geometry_msgs/Pose.h"
 #include "AActorSemLogPublisher.generated.h"
 
 UCLASS()
-class UROSSEMLOGINFOPLUGIN_API AAActorSemLogPublisher : public AActor
+class UROSSEMLOGINFOPLUGIN_API AActorSemLogPublisher : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AAActorSemLogPublisher();
+	AActorSemLogPublisher();
 	TSharedPtr<FROSBridgePublisher> Publisher;
 
 	UPROPERTY(EditAnywhere)
@@ -37,4 +38,6 @@ public:
 	void PublishAllObjectsWithTag(UROSBridgeGameInstance* Instance, FString Topic, FString Tag);
 
 private:
+	//Time Counter
+	float TimeCounterRosCall = 1.00;
 };
