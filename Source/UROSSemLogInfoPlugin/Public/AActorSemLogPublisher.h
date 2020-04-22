@@ -23,7 +23,9 @@ public:
 	TSharedPtr<FROSBridgePublisher> Publisher;
 
 	UPROPERTY(EditAnywhere)
-	FString PoseStampedTopic = FString("/sem_log_pose");
+	FString PoseStampedTopic = FString("/sem_log_plugin/posestamped_messages");
+	UPROPERTY(EditAnywhere)
+	FString DeleteServiceName = FString("/sem_log_plugin/delete_all_objects");
 
 protected:
 	// Called when the game starts or when spawned
@@ -39,5 +41,5 @@ public:
 
 private:
 	//Time Counter
-	float TimeCounterRosCall = 1.00;
+	float TimeCounterRosCall = 0.00;
 };

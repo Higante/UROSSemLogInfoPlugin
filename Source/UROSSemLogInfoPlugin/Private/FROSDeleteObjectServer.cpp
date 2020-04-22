@@ -3,12 +3,6 @@
 
 TSharedPtr<FROSBridgeSrv::SrvRequest> FROSDeleteObjectServer::FromJson(TSharedPtr<FJsonObject> FJsonObject) const
 {
-	/*
-	TSharedPtr<std_srvs::Trigger::Request> Request = MakeShareable(std_srvs::Trigger::Request());
-	
-	Request->FromJson(FJsonObject);
-	*/
-
 	return TSharedPtr<FROSBridgeSrv::SrvRequest>();
 }
 
@@ -19,12 +13,12 @@ TSharedPtr<FROSBridgeSrv::SrvResponse> FROSDeleteObjectServer::Callback(TSharedP
 	UE_LOG(LogTemp, Log, TEXT("Response: Deleting Stuff"));
 
 	// SemLog Delete
-	DeleteSemLogObjects();
+	bool bSuccess = DeleteSemLogObjects();
 
-	return MakeShareable<std_srvs::Trigger::SrvResponse>(new std_srvs::Trigger::Response(true, ""));
+	return MakeShareable<std_srvs::Trigger::SrvResponse>(new std_srvs::Trigger::Response(bSuccess, ""));
 }
 
-void FROSDeleteObjectServer::DeleteSemLogObjects()
+bool FROSDeleteObjectServer::DeleteSemLogObjects()
 {
 	TMap<AActor*, FJsonSerializableKeyValueMap> ActorMap = ActorRef;
 
@@ -35,4 +29,6 @@ void FROSDeleteObjectServer::DeleteSemLogObjects()
 	{
 		aActor->Destroy();
 	}
+
+	return KeyList.Num() == 0;
 }

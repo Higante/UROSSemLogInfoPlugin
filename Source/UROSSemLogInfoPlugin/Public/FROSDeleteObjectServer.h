@@ -19,5 +19,5 @@ public:
 	TSharedPtr<FROSBridgeSrv::SrvResponse> Callback(TSharedPtr<FROSBridgeSrv::SrvRequest> InRequest) override;
 
 private:
-	void DeleteSemLogObjects();
+	bool DeleteSemLogObjects();
 };

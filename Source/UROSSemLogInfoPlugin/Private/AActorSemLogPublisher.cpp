@@ -29,7 +29,7 @@ void AActorSemLogPublisher::BeginPlay()
 	// PoseStamped Publisher
 	Publisher = MakeShareable<FROSBridgePublisher>(new FROSBridgePublisher(PoseStampedTopic, TEXT("geometry_msgs/PoseStamped")));
 	ActiveGameInstance->ROSHandler->AddPublisher(Publisher);
-	TSharedPtr<FROSDeleteObjectServer> ServiceServer = MakeShareable(new FROSDeleteObjectServer(TEXT("/delete_trigger"), GetSemLogObjects()));
+	TSharedPtr<FROSDeleteObjectServer> ServiceServer = MakeShareable(new FROSDeleteObjectServer(DeleteServiceName, GetSemLogObjects()));
 	ActiveGameInstance->ROSHandler->AddServiceServer(ServiceServer);
 	
 	ActiveGameInstance->ROSHandler->Process();
