@@ -23,12 +23,26 @@ bool FROSDeleteObjectServer::DeleteSemLogObjects()
 	TMap<AActor*, FJsonSerializableKeyValueMap> ActorMap = ActorRef;
 
 	TArray<AActor*> KeyList;
+	TArray<AActor*> ActorsToDelete;
 	ActorMap.GetKeys(KeyList);
 
-	for (AActor* aActor : KeyList)
+	TArray<FJsonSerializableKeyValueMap> ValueArray;
+	ActorMap.GenerateValueArray(ValueArray);
+
+
+	for (int i = 0; i < ActorMap.Num(); i++)
+	{
+		if (ValueArray[i].Contains("type") && ValueArray[i].Contains("key")
+			&& ValueArray[i]["type"] == TypeToDelete && ValueArray[i]["key"] == KeyToDelete)
+		{
+			ActorsToDelete.Add(KeyList[i]);
+		}
+	}
+
+	for (AActor* aActor : ActorsToDelete)
 	{
 		aActor->Destroy();
 	}
 
-	return KeyList.Num() == 0;
+	return ActorsToDelete.Num() == 0;
 }

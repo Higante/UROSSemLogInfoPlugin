@@ -24,6 +24,6 @@ It will advertise a service to delete all SemLog Objects in the Level under: '/s
 
 - [x] PoseStamped Publisher, Info of every SemLog Tagged Object in which the Actor is in.
 - [x] Remove all the SemLog Objects at once per Ros Service Call
-- [] Check if the SemLog Object is stable.
-    + [] Maybe a custom Message Type
-- [] Check if the SemLog Object had an collision.
+- [ ] Check if the SemLog Object is stable.
+    + [ ] Maybe a custom Message Type
+- [ ] Check if the SemLog Object had an collision.

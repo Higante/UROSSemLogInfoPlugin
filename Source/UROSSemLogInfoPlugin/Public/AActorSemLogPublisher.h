@@ -10,6 +10,7 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Quaternion.h"
 #include "geometry_msgs/Pose.h"
+#include "Array.h"
 #include "AActorSemLogPublisher.generated.h"
 
 UCLASS()
@@ -26,6 +27,11 @@ public:
 	FString PoseStampedTopic = FString("/sem_log_plugin/posestamped_messages");
 	UPROPERTY(EditAnywhere)
 	FString DeleteServiceName = FString("/sem_log_plugin/delete_all_objects");
+
+	UPROPERTY(EditAnywhere)
+		FString TypeToDelete = "Robosherlock";
+	UPROPERTY(EditAnywhere)
+		FString KeyToDelete = "spawned";
 
 protected:
 	// Called when the game starts or when spawned
