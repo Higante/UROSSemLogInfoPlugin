@@ -11,13 +11,11 @@ class UROSSEMLOGINFOPLUGIN_API FROSDeleteObjectServer : public FROSBridgeSrvServ
 
 public:
 	TMap<AActor*, FJsonSerializableKeyValueMap> ActorRef;
-	FString TypeToDelete;
 	FString KeyToDelete;
 
-	FROSDeleteObjectServer(const FString& InName, TMap<AActor*, FJsonSerializableKeyValueMap> ActorRef, FString KeytoDelete, FString TypeToDelete) : FROSBridgeSrvServer(InName, TEXT("std_srvs/Trigger")) 
+	FROSDeleteObjectServer(const FString& InName, TMap<AActor*, FJsonSerializableKeyValueMap> ActorRef, FString KeytoDelete) : FROSBridgeSrvServer(InName, TEXT("std_srvs/Trigger")) 
 	{ 
 		this->ActorRef = ActorRef;
-		this->TypeToDelete = TypeToDelete;
 		this->KeyToDelete = KeytoDelete;
 	};
 

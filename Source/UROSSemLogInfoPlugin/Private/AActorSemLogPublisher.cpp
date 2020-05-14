@@ -17,6 +17,11 @@ void AActorSemLogPublisher::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	ActorsSavedStates = TArray<FVector>();
+	ActorsSavedStates.Init(FVector(), TrackingSavedStates * 100);
+
+	CollectTrackedActors();
+
 	// Checking for nullptr
 	check(GetGameInstance());
 
@@ -28,7 +33,7 @@ void AActorSemLogPublisher::BeginPlay()
 	// PoseStamped Publisher
 	Publisher = MakeShareable<FROSBridgePublisher>(new FROSBridgePublisher(PoseStampedTopic, TEXT("geometry_msgs/PoseStamped")));
 	ActiveGameInstance->ROSHandler->AddPublisher(Publisher);
-	TSharedPtr<FROSDeleteObjectServer> ServiceServer = MakeShareable(new FROSDeleteObjectServer(DeleteServiceName, GetSemLogObjects(), KeyToDelete,TypeToDelete));
+	TSharedPtr<FROSDeleteObjectServer> ServiceServer = MakeShareable(new FROSDeleteObjectServer(DeleteServiceName, GetSemLogObjects(), KeyToDelete));
 	ActiveGameInstance->ROSHandler->AddServiceServer(ServiceServer);
 	
 	ActiveGameInstance->ROSHandler->Process();
@@ -45,21 +50,29 @@ void AActorSemLogPublisher::Tick(float DeltaTime)
 	// Current ROS Game instance.
 	UROSBridgeGameInstance* ActiveGameInstance = Cast<UROSBridgeGameInstance>(GetGameInstance());
 	check(ActiveGameInstance);
-
+	// 1 Sekunde belassen fürs erst.
 	TimeCounterRosCall += DeltaTime;
 	if (TimeCounterRosCall >= 1.00)
 	{
 		TimeCounterRosCall -= 1.00;
-		PublishAllObjectsWithTag(ActiveGameInstance, PoseStampedTopic, "SemLog");
+		PublishAllObjectsWithTag(ActiveGameInstance, PoseStampedTopic, TypeToDelete);
 	}
 	ActiveGameInstance->ROSHandler->Process();
+
+	// Debug Stability out side ROS
+	SaveTrackedActorStates();
+
+	for (AActor* Actor : TrackedActorsInScene)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s is stable: %s"), *Actor->GetName(), IsStableTrackedActor(Actor));
+	}
 }
 
 TMap<AActor*, FJsonSerializableKeyValueMap> AActorSemLogPublisher::GetSemLogObjects()
 {
 	TMap<AActor*, FJsonSerializableKeyValueMap> Actors;
 
-	Actors = FTags::GetActorsToKeyValuePairs(this->GetWorld(), "SemLog");
+	Actors = FTags::GetActorsToKeyValuePairs(this->GetWorld(), TypeToDelete);
 
 	return Actors;
 }
@@ -81,5 +94,49 @@ void AActorSemLogPublisher::PublishAllObjectsWithTag(UROSBridgeGameInstance* Ins
 		TSharedPtr<geometry_msgs::PoseStamped> PoseMsgPtr(new geometry_msgs::PoseStamped(std_msgs::Header(0, FROSTime::Now(), *Value), geometry_msgs::Pose(geometry_msgs::Point(KeyList[i]->GetActorLocation()), geometry_msgs::Quaternion(KeyList[i]->GetActorRotation().Quaternion()))));
 		Handler->PublishMsg(Topic, PoseMsgPtr);
 	}
+}
+
+void AActorSemLogPublisher::CollectTrackedActors()
+{
+	TMap<AActor*, FJsonSerializableKeyValueMap> Actors;
+	TArray<AActor*> OutActorArray;
+
+	Actors = FTags::GetActorsToKeyValuePairs(this->GetWorld(), TagToTrack);
+	Actors.GenerateKeyArray(OutActorArray);
+	TrackedActorsInScene = OutActorArray;
+}
+
+void AActorSemLogPublisher::SaveTrackedActorStates()
+{
+	for (int i = 0; i < TrackedActorsInScene.Num(); i++)
+	{
+		ActorsSavedStates[i + 2] = ActorsSavedStates[i + 1];
+		ActorsSavedStates[i + 1] = ActorsSavedStates[i];
+		ActorsSavedStates[i] = TrackedActorsInScene[i]->GetActorLocation();
+	}
+
+	if (StatesSavedRunTime < 3)
+		StatesSavedRunTime++;
+}
+
+bool AActorSemLogPublisher::IsStableTrackedActor(AActor * RefActor)
+{
+	if (!TrackedActorsInScene.Contains(RefActor))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ERROR: Given Actor is not tracked: %s"), *RefActor->GetName());
+		return false;
+	} else if (StatesSavedRunTime < 3)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ERROR: Not enough Saved States to determine. Saved States: %i"), StatesSavedRunTime);
+	}
+
+	bool bResult = false;
+	int PosActor = TrackedActorsInScene.Find(RefActor);
+
+	bResult = ActorsSavedStates[PosActor].Equals(ActorsSavedStates[PosActor + 1]) 
+		&& ActorsSavedStates[PosActor].Equals(ActorsSavedStates[PosActor + 2])
+		&& ActorsSavedStates[PosActor + 1].Equals(ActorsSavedStates[PosActor + 2]);
+
+	return bResult;
 }
 

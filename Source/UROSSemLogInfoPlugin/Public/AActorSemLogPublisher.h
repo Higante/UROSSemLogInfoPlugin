@@ -33,6 +33,19 @@ public:
 	UPROPERTY(EditAnywhere)
 		FString KeyToDelete = "spawned";
 
+	FString TagToTrack = "Tracked";
+
+private:
+	// Time Counter
+	float TimeCounterRosCall = 0.00;
+
+	// Variables for Stability Check
+	int TrackingSavedStates = 5;
+	int StatesSavedRunTime = 0;
+	// Memory for Tracked Object.
+	TArray<FVector> ActorsSavedStates;
+	TArray<AActor*> TrackedActorsInScene;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -46,6 +59,10 @@ public:
 	void PublishAllObjectsWithTag(UROSBridgeGameInstance* Instance, FString Topic, FString Tag);
 
 private:
-	//Time Counter
-	float TimeCounterRosCall = 0.00;
+	// Collects all the Actors with the "Tracked" Tag into an array.
+	void CollectTrackedActors();
+	// Goes through the collected Tracked Actors and saves their positions. 
+	void SaveTrackedActorStates();
+	// Chesk whether or not the given Tracked Actor is stable or not.
+	bool IsStableTrackedActor(AActor* RefActor);
 };

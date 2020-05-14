@@ -32,8 +32,7 @@ bool FROSDeleteObjectServer::DeleteSemLogObjects()
 
 	for (int i = 0; i < ActorMap.Num(); i++)
 	{
-		if (ValueArray[i].Contains("type") && ValueArray[i].Contains("key")
-			&& ValueArray[i]["type"] == TypeToDelete && ValueArray[i]["key"] == KeyToDelete)
+		if (ValueArray[i].Contains(KeyToDelete))
 		{
 			ActorsToDelete.Add(KeyList[i]);
 		}
