@@ -11,7 +11,6 @@ TSharedPtr<FROSBridgeSrv::SrvResponse> FROSDeleteObjectServer::Callback(TSharedP
 	TSharedPtr<std_srvs::Trigger::Request> Request = StaticCastSharedPtr<std_srvs::Trigger::Request>(InRequest);
 
 	UE_LOG(LogTemp, Log, TEXT("Response: Deleting Stuff"));
-
 	// SemLog Delete
 	bool bSuccess = DeleteSemLogObjects();
 
@@ -20,17 +19,18 @@ TSharedPtr<FROSBridgeSrv::SrvResponse> FROSDeleteObjectServer::Callback(TSharedP
 
 bool FROSDeleteObjectServer::DeleteSemLogObjects()
 {
-	TMap<AActor*, FJsonSerializableKeyValueMap> ActorMap = ActorRef;
+	TMap<AActor*, FJsonSerializableKeyValueMap> Actors;
+	Actors = FTags::GetActorsToKeyValuePairs(WorkingWorld, "BeliefStateInfo");
 
 	TArray<AActor*> KeyList;
 	TArray<AActor*> ActorsToDelete;
-	ActorMap.GetKeys(KeyList);
+	Actors.GetKeys(KeyList);
 
 	TArray<FJsonSerializableKeyValueMap> ValueArray;
-	ActorMap.GenerateValueArray(ValueArray);
+	Actors.GenerateValueArray(ValueArray);
 
 
-	for (int i = 0; i < ActorMap.Num(); i++)
+	for (int i = 0; i < Actors.Num(); i++)
 	{
 		if (ValueArray[i].Contains(KeyToDelete))
 		{

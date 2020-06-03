@@ -44,7 +44,8 @@ private:
 	int StatesSavedRunTime = 0;
 	// Memory for Tracked Object.
 	TArray<FVector> ActorsSavedStates;
-	TArray<AActor*> TrackedActorsInScene;
+	TArray<AActor*> TrackedActorsInScene; 
+	TSharedPtr<FROSDeleteObjectServer> ServiceServer;
 
 protected:
 	// Called when the game starts or when spawned

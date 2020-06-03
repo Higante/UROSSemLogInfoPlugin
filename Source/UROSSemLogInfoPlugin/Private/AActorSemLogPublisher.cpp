@@ -33,7 +33,7 @@ void AActorSemLogPublisher::BeginPlay()
 	// PoseStamped Publisher
 	Publisher = MakeShareable<FROSBridgePublisher>(new FROSBridgePublisher(PoseStampedTopic, TEXT("geometry_msgs/PoseStamped")));
 	ActiveGameInstance->ROSHandler->AddPublisher(Publisher);
-	TSharedPtr<FROSDeleteObjectServer> ServiceServer = MakeShareable(new FROSDeleteObjectServer(DeleteServiceName, GetSemLogObjects(), KeyToDelete));
+	ServiceServer = MakeShareable(new FROSDeleteObjectServer(DeleteServiceName, this->GetWorld(), GetSemLogObjects(), KeyToDelete));
 	ActiveGameInstance->ROSHandler->AddServiceServer(ServiceServer);
 	
 	ActiveGameInstance->ROSHandler->Process();
@@ -81,7 +81,7 @@ void AActorSemLogPublisher::PublishAllObjectsWithTag(UROSBridgeGameInstance* Ins
 {
 	// Set up a Handler Variable and an Actor Map.
 	TSharedPtr<FROSBridgeHandler> Handler = Instance->ROSHandler;
-	TMap<AActor*, FJsonSerializableKeyValueMap> ActorMap = FTags::GetActorsToKeyValuePairs(this->GetWorld(), Tag);
+	TMap<AActor*, FJsonSerializableKeyValueMap> ActorMap = FTags::GetActorsToKeyValuePairs(this->GetWorld(), "SemLog");
 	TArray<AActor*> KeyList;
 	TArray<FJsonSerializableKeyValueMap> ValueArray;
 	ActorMap.GetKeys(KeyList);
@@ -90,7 +90,12 @@ void AActorSemLogPublisher::PublishAllObjectsWithTag(UROSBridgeGameInstance* Ins
 	for (int i = 0; i < ActorMap.Num(); i++)
 	{
 		FString* Value = ValueArray[i].Find("Id");
-
+		if (!Value)
+		{
+			UE_LOG(LogTemp, Error, TEXT("ERROR: ID Tag not found in SemLog"));
+			return;
+		}
+			
 		TSharedPtr<geometry_msgs::PoseStamped> PoseMsgPtr(new geometry_msgs::PoseStamped(std_msgs::Header(0, FROSTime::Now(), *Value), geometry_msgs::Pose(geometry_msgs::Point(KeyList[i]->GetActorLocation()), geometry_msgs::Quaternion(KeyList[i]->GetActorRotation().Quaternion()))));
 		Handler->PublishMsg(Topic, PoseMsgPtr);
 	}
