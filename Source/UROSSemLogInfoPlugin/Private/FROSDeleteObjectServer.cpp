@@ -12,8 +12,16 @@ TSharedPtr<FROSBridgeSrv::SrvResponse> FROSDeleteObjectServer::Callback(TSharedP
 
 	UE_LOG(LogTemp, Log, TEXT("Response: Deleting Stuff"));
 	// SemLog Delete
-	bool bSuccess = DeleteSemLogObjects();
 
+	bool bSuccess = true;
+	FGraphEventRef Task = FFunctionGraphTask::CreateAndDispatchWhenReady([&]()
+	{
+	  bSuccess = DeleteSemLogObjects();
+	}, TStatId(), nullptr, ENamedThreads::GameThread);
+
+
+	//wait code above to complete
+	FTaskGraphInterface::Get().WaitUntilTaskCompletes(Task);
 	return MakeShareable<std_srvs::Trigger::SrvResponse>(new std_srvs::Trigger::Response(bSuccess, ""));
 }
 
